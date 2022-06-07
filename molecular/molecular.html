@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>molecular</title>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="800" height="800"></canvas>
+    <br/>
+    <p>Slide To Change Size of Kernel & Electron
+    <input id="slider1" type="range" min="5" max="15" />
+    <br/>
+    <p>Slide To Change Atom Velocity
+    <input id="slider2" type="range" min="-5" max="5" />
+    <br/>
+    <p>Slide To Change Shape of Kernel & Electron (better to observe in the stationary state)
+    <input id="slider3" type="range" min="0" max="100" />
+    <br/>
+    <p>Slide To Change Electron Velocity
+    <input id="slider4" type="range" min="-5" max="5" />
+    <br/>
+    <p>Slide To Change Orbit Radius
+    <input id="slider5" type="range" min="10" max="20" />
+    <script type="text/javascript" src="gl-matrix-min.js"></script>
+    <script src="molecular_script.js" id="module"></script>
+  </body>
+</html>

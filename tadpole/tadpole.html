@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>3D tadpole</title>
+</head>
+<body>
+  <canvas id="observerCanvas" width="600" height="600" style="border:1px solid #888;"></canvas>
+  <canvas id="cameraCanvas" width="600" height="600" style="border:1px solid #888;"></canvas>
+  </br>
+  <input id="slider1" type="range" min="0" max="2" /> Switch to turn off/on the "path"
+  </br>
+  <input id="slider2" type="range" min="0" max="200" /> Control the position of the camera
+  </br>
+  <input id="slider3" type="range" min="0" max="200" /> Control the speed of planes and kaleidoscopes
+  </br>
+  <input id="slider4" type="range" min="-100" max="100" /> Control the shape of the "path"
+  </br>
+  <input id="slider5" type="range" min="0" max="100" /> Control the pattern of the kaleidoscope
+  </br>
+  <input id="slider6" type="range" min="0" max="100" /> Control the distance between small planes
+  </br>
+  <input id="slider7" type="range" min="0" max="100" /> Control the relative position between multiple kaleidoscopes
+  <script type="text/javascript" src="gl-matrix-min.js"></script>
+  <script src="tadpole_script.js" id="module"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>2 missiles in 3D</title>
+</head>
+<body>
+  <canvas id="observerCanvas" width="600" height="600" style="border:1px solid #888;"></canvas>
+  <canvas id="cameraCanvas" width="600" height="600" style="border:1px solid #888;"></canvas>
+  </br>
+  <input id="slider1" type="range" min="0" max="1" /> Switch to turn off/on the "path"
+  </br>
+  <input id="slider2" type="range" min="0" max="200" /> Control the position of the camera
+  </br>
+  <input id="slider3" type="range" min="0" max="200" /> Control the speed
+  </br>
+  <input id="slider4" type="range" min="-100" max="100" /> Control the shape of the curve
+  <script type="text/javascript" src="gl-matrix-min.js"></script>
+  <script src="missiles_script.js" id="module"></script>
+</body>
+</html>

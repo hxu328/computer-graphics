@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>3D stars</title>
+  </head>
+
+  <body>
+    <script id="vertexShader" type="not-js">
+      attribute vec3 vPosition;
+      attribute vec3 vNormal;
+      attribute vec3 vColor;
+      attribute vec2 vTexCoord;
+      varying vec3 fPosition;
+      varying vec3 fColor;
+      varying vec3 fNormal;
+      varying vec2 fTexCoord;
+      varying vec3 localPosition;
+
+      uniform mat4 uMV;
+      uniform mat4 uMVP;
+      uniform float u_time;
+      uniform float wave_time;
+
+      float Wave2D(vec2 cord_in, float angle){
+        float cord_out;
+        cord_out = cord_in.y + sin(cord_in.x + angle)*0.2;
+        return cord_out;
+      }
+
+      void main(void) {
+        vec3 modelX = vPosition;
+        vec3 modelN = vNormal;
+
+        modelX.y = Wave2D(vec2(modelX.xy), 20.0*wave_time);
+        modelN.y = Wave2D(vec2(modelN.xy), 20.0*wave_time);
+
+        gl_Position = uMVP * vec4(modelX, 1.0);
+        fPosition = (uMV * vec4(modelX, 1.0)).xyz; // In camera coordinates
+        fColor = vColor;
+        fNormal = modelN;                            // In local coordinates
+        fTexCoord = vTexCoord;
+        localPosition = vPosition;
+     }
+    </script>
+
+    <script id="fragmentShader" type="not-js">
+      precision highp float;
+      varying vec3 fPosition;
+      varying vec3 fColor;
+      varying vec3 fNormal;
+      varying vec2 fTexCoord;
+      varying vec3 localPosition;
+      uniform mat4 uMV;
+      uniform mat3 uMVn;
+      uniform sampler2D texSampler1;
+      uniform float u_time;
+      uniform float wave_time;
+
+      void main(void) {
+        vec3 raw = localPosition;
+        vec3 n = normalize(uMVn * fNormal);
+        float angle = 10.0*u_time;
+        vec3 lightV_1 = vec3(sin(angle), 1.0, cos(angle));
+        vec3 lightV_2 = vec3(sin(-angle), -1.0, cos(-angle));
+        vec3 lightCol_1 = vec3(0.5,0.5,0.5);
+        vec3 lightCol_2 = vec3(0.5+0.5*sin(angle), 0.5, 0.5+0.5*cos(angle));
+        float ambient = 0.2;
+
+        vec3 s_1 = normalize(lightV_1);
+        vec3 v_1 = normalize(-fPosition);
+        vec3 n_1 = n;
+        vec3 h_1 = normalize(v_1+s_1);
+
+        vec3 s_2 = normalize(lightV_2);
+        vec3 v_2 = normalize(-fPosition);
+        vec3 n_2 = n;
+        vec3 h_2 = normalize(v_2+s_2);
+
+        float spec_1 = 1.0 * pow(max(0.0, dot(n_1,h_1)), 32.0);
+        float spec_2 = 0.7 * pow(max(0.0, dot(n_2,h_2)), 64.0);
+        float diffuse = 0.7 * 1.0 * max(0.0, dot(n_1, s_1));
+
+        vec3 color_1 = spec_1 * lightCol_1;
+        vec3 color_2 = spec_2 * lightCol_2;
+
+        vec3 texColor=texture2D(texSampler1,fTexCoord).xyz;
+        vec3 colorD = (diffuse+ambient) * texColor;
+        gl_FragColor = vec4(color_1+color_2+colorD,1.0);
+        if(sin(100.0*(raw.x+raw.y))>0.5) discard;
+        if(sin(100.0*(raw.x-raw.y))>0.5) discard;
+      }
+    </script>
+
+    <script id="vertexShader_left" type="not-js">
+      attribute vec3 vPosition;
+      attribute vec3 vNormal;
+      attribute vec3 vColor;
+      attribute vec2 vTexCoord;
+      varying vec3 fPosition;
+      varying vec3 fColor;
+      varying vec3 fNormal;
+      varying vec2 fTexCoord;
+      varying vec3 localPosition;
+
+      uniform mat4 uMV;
+      uniform mat4 uMVP;
+      uniform float u_time;
+      uniform float wave_time;
+
+      float Wave2D(vec2 cord_in, float angle){
+        float cord_out;
+        cord_out = cord_in.y + sin(cord_in.x + angle)*0.2;
+        return cord_out;
+      }
+
+      void main(void) {
+        vec3 modelX = vPosition;
+        vec3 modelN = vNormal;
+
+        modelX.z = Wave2D(vec2(modelX.xz), 20.0*wave_time);
+        modelN.z = Wave2D(vec2(modelN.xz), 20.0*wave_time);
+
+        gl_Position = uMVP * vec4(modelX, 1.0);
+        fPosition = (uMV * vec4(modelX, 1.0)).xyz; // In camera coordinates
+        fColor = vColor;
+        fNormal = modelN;                            // In local coordinates
+        fTexCoord = vTexCoord;
+        localPosition = vPosition;
+     }
+    </script>
+
+    <script id="fragmentShader_left" type="not-js">
+      precision highp float;
+      varying vec3 fPosition;
+      varying vec3 fColor;
+      varying vec3 fNormal;
+      varying vec2 fTexCoord;
+      varying vec3 localPosition;
+      uniform mat4 uMV;
+      uniform mat3 uMVn;
+      uniform sampler2D texSampler2;
+      uniform float u_time;
+      uniform float wave_time;
+
+      void main(void) {
+        vec3 raw = localPosition;
+        //vec3 n = normalize(uMVn * fNormal);
+
+        vec3 dNormal=texture2D(texSampler2,fTexCoord).xyz;
+        vec3 n_perturbed = normalize(dNormal+fNormal);
+        vec3 n = normalize(uMVn * n_perturbed);
+
+        float angle = 10.0*u_time;
+        vec3 lightV_1 = vec3(sin(angle), 1.0, cos(angle));
+        vec3 lightV_2 = vec3(sin(-angle), -1.0, cos(-angle));
+        vec3 lightCol_1 = vec3(0.5,0.5,0.5);
+        vec3 lightCol_2 = vec3(0.5+0.5*sin(angle), 0.5, 0.5+0.5*cos(angle));
+        float ambient = 0.2;
+
+        vec3 s_1 = normalize(lightV_1);
+        vec3 v_1 = normalize(-fPosition);
+        vec3 n_1 = n;
+        vec3 h_1 = normalize(v_1+s_1);
+
+        vec3 s_2 = normalize(lightV_2);
+        vec3 v_2 = normalize(-fPosition);
+        vec3 n_2 = n;
+        vec3 h_2 = normalize(v_2+s_2);
+
+        float spec_1 = 1.0 * pow(max(0.0, dot(n_1,h_1)), 32.0);
+        float spec_2 = 0.7 * pow(max(0.0, dot(n_2,h_2)), 64.0);
+        float diffuse = 0.7 * 1.0 * max(0.0, dot(n_1, s_1));
+
+        vec3 color_1 = spec_1 * lightCol_1;
+        vec3 color_2 = spec_2 * lightCol_2;
+
+        //vec3 texColor=texture2D(texSampler2,fTexCoord).xyz;
+        vec3 colorD = (diffuse+ambient) * fColor;
+        gl_FragColor = vec4(color_1+color_2+colorD,1.0);
+      }
+    </script>
+
+    <script id="vertexShader_right" type="not-js">
+        attribute vec3 vPosition;
+        attribute vec3 vNormal;
+        attribute vec3 vColor;
+        attribute vec2 vTexCoord;
+        varying vec3 fPosition;
+        varying vec3 fColor;
+        varying vec3 fNormal;
+        varying vec2 fTexCoord;
+        varying vec3 localPosition;
+
+        uniform mat4 uMV;
+        uniform mat4 uMVP;
+        uniform float u_time;
+        uniform float wave_time;
+
+        float Wave2D(vec2 cord_in, float angle){
+          float cord_out;
+          cord_out = cord_in.y + sin(cord_in.x + angle)*0.2;
+          return cord_out;
+        }
+
+        void main(void) {
+          vec3 modelX = vPosition;
+          vec3 modelN = vNormal;
+
+          modelX.z = Wave2D(vec2(modelX.yz), 20.0*wave_time);
+          modelN.z = Wave2D(vec2(modelN.yz), 20.0*wave_time);
+
+          gl_Position = uMVP * vec4(modelX, 1.0);
+          fPosition = (uMV * vec4(modelX, 1.0)).xyz; // In camera coordinates
+          fColor = vColor;
+          fNormal = modelN;                            // In local coordinates
+          fTexCoord = vTexCoord;
+          localPosition = vPosition;
+       }
+
+    </script>
+
+    <script id="fragmentShader_right" type="not-js">
+      precision highp float;
+      varying vec3 fPosition;
+      varying vec3 fColor;
+      varying vec3 fNormal;
+      varying vec2 fTexCoord;
+      varying vec3 localPosition;
+      uniform mat4 uMV;
+      uniform mat3 uMVn;
+      uniform sampler2D texSampler3;
+      uniform sampler2D texSampler4;
+      uniform sampler2D texSampler5;
+      uniform float u_time;
+      uniform float wave_time;
+
+      void main(void) {
+        vec3 raw = localPosition;
+        vec3 n = normalize(uMVn * fNormal);
+        float texSelector=texture2D(texSampler3,fTexCoord).x;
+        vec3 texColor4=texture2D(texSampler4,fTexCoord).xyz;
+        vec3 texColor5=texture2D(texSampler5,fTexCoord).xyz;
+        vec3 texColor;
+        if(texSelector < 0.5)
+          texColor = texColor4;
+        else
+          texColor = texColor5;
+
+
+        float angle = 10.0*u_time;
+        vec3 lightV_1 = vec3(sin(angle), 1.0, cos(angle));
+        vec3 lightV_2 = vec3(sin(-angle), -1.0, cos(-angle));
+        vec3 lightCol_1 = vec3(0.5,0.5,0.5);
+        vec3 lightCol_2 = vec3(0.5+0.5*sin(angle), 0.5, 0.5+0.5*cos(angle));
+        float ambient = 0.2;
+
+        vec3 s_1 = normalize(lightV_1);
+        vec3 v_1 = normalize(-fPosition);
+        vec3 n_1 = n;
+        vec3 h_1 = normalize(v_1+s_1);
+
+        vec3 s_2 = normalize(lightV_2);
+        vec3 v_2 = normalize(-fPosition);
+        vec3 n_2 = n;
+        vec3 h_2 = normalize(v_2+s_2);
+
+        float spec_1 = 1.0 * pow(max(0.0, dot(n_1,h_1)), 32.0);
+        float spec_2 = 0.7 * pow(max(0.0, dot(n_2,h_2)), 64.0);
+        float diffuse = 0.7 * 1.0 * max(0.0, dot(n_1, s_1));
+
+        vec3 color_1 = spec_1 * lightCol_1;
+        vec3 color_2 = spec_2 * lightCol_2;
+
+        vec3 colorD = (diffuse+ambient) * texColor;
+        gl_FragColor = vec4(color_1+color_2+colorD,1.0);
+      }
+
+    </script>
+
+    <canvas id="mycanvas" width="500" height="500"></canvas>
+
+    </br>
+    <input id="slider1" type="range" min="-100" max="100" /> Camera position
+    </br>
+    <input id="slider2" type="range" min="-100" max="100" /> Rotate
+    </br>
+    <input id="slider3" type="range" min="0" max="200" /> Control wave speed
+    </br>
+    <input id="slider4" type="range" min="0" max="200" /> Control fly speed
+    </br>
+    <script type="text/javascript" src="gl-matrix-min.js"></script>
+    <script src="diamond.js" id="module"></script>
+  </body>
+</html>
